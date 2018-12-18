@@ -14,7 +14,7 @@ if __name__ == "__main__":
                         help="True if sequencing aminoacids")
     parser.add_argument("--convert_2_dna", type=bool, default=False,
                         help="True if data in RNA")
-    parser.add_argument("--aligner_mode", type=str, default='local',
+    parser.add_argument("--aligner_mode", type=str, default='global',
                         help="local or global.")
     parser.add_argument("--matrix_path", type=str, default='distance_matrix.csv',
                         help="Path to distance matrix .csv file.")

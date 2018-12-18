@@ -55,25 +55,24 @@ class Aligner:
         """Returns alignments"""
         if custom_matrix:
             self._load_distance_matrix()
-
-        kwargs = dict(self.seqs)
-        kwargs['one_alignment_only'] = True
-        kwargs['penalize_extend_when_opening'] = True
-        kwargs['matrix'] = self.distance_matrix_dict
+        #
+        # kwargs = dict(self.seqs)
+        # kwargs['one_alignment_only'] = True
+        # kwargs['penalize_extend_when_opening'] = True
+        # kwargs['matrix'] = self.distance_matrix_dict
 
         if self.aligner_mode == 'local':
-            return pairwise2.align.localds(kwargs['seqA'], kwargs['seqB'], self.distance_matrix_dict, -10, 0)
+            return pairwise2.align.localmc(self.seqs['seqA'], self.seqs['seqB'], self.distance_matrix_dict, -10, -5)
         elif self.aligner_mode == 'global':
-            pass
+            return pairwise2.align.globalmc(self.seqs['seqA'], self.seqs['seqB'], self.distance_matrix_dict, -10, -5)
         else:
             raise Exception("wrong mode.")
 
     def print_alignments(self,custom_matrix=False):
         """Print alignment and it's score"""
+        alignments = self._get_alignments(custom_matrix=custom_matrix)
+        print(pairwise2.format_alignment(*alignments[0]))
 
-        for elem in self._get_alignments(custom_matrix=custom_matrix):
-            print(elem)
-            print(elem.___dict__)
 
     # def _get_best_alignment(self, custom_matrix=False):
     #     """Returns best alignment"""
