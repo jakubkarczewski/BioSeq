@@ -16,10 +16,13 @@ if __name__ == "__main__":
                         help="True if data in RNA")
     parser.add_argument("--aligner_mode", type=str, default='local',
                         help="local or global.")
+    parser.add_argument("--matrix_path", type=str, default='distance_matrix.csv',
+                        help="Path to distance matrix .csv file.")
     args = parser.parse_args()
 
-    aligner = Aligner([args.seq_A_path, args.seq_A_path], args.aminoacid_dict_path, args.aligner_mode, False, False)
+    aligner = Aligner([args.seq_A_path, args.seq_B_path], args.aminoacid_dict_path, args.aligner_mode,
+                      args.matrix_path, False, False)
     aligner.read_seqs()
 
-    print(aligner.get_score())
-    aligner.print_alignment()
+    # print(aligner.get_score())
+    aligner.print_alignments(custom_matrix=True)
