@@ -1,20 +1,24 @@
 from os.path import isfile
 from pickle import load
 
+import pandas as pd
 from Bio import Align
 
 
 class Aligner:
-    def __init__(self, seq_paths, aminoacid_dict_path, aligner_mode, rna=False, amino=False):
+    def __init__(self, seq_paths, aminoacid_dict_path, aligner_mode, distance_matrix_path, rna=False, amino=False):
         # check validity of data
         assert isinstance(seq_paths, list)
         assert all(isfile(path) for path in seq_paths)
         assert len(seq_paths) == 2
         assert aligner_mode in ('local', 'global')
         assert isfile(aminoacid_dict_path)
+        assert isfile(distance_matrix_path)
 
         self.seq_paths = seq_paths
         self.seqs = {}
+        self.distance_matrix_path = distance_matrix_path
+        self.distance_matrix_dict = None
 
         # load dna_2_aminoacid dict
         with open(aminoacid_dict_path, 'rb') as f:
@@ -48,8 +52,11 @@ class Aligner:
         """Returns best alignment score"""
         return self.aligner.score(**self.seqs)
 
-    def _get_alignments(self):
+    def _get_alignments(self, custom_matrix=False):
         """Returns alignments"""
+        if custom_matrix:
+            self._load_distance_matrix()
+            self.aligner.substitution_matrix = self.distance_matrix_dict
         return self.aligner.align(**self.seqs)
 
     def print_alignment(self):
@@ -89,4 +96,13 @@ class Aligner:
 
     def _read_fasta(self):
         raise NotImplementedError
+
+    def _load_distance_matrix(self):
+        """Load distance matrix dict from .csv file."""
+        raw_dict = pd.read_csv(self.distance_matrix_path, index_col=0).to_dict()
+        self.distance_matrix_dict = {}
+        for key in raw_dict.keys():
+            for subkey in raw_dict[key].keys():
+                if str(raw_dict[key][subkey]) != 'nan' and subkey != '-' and key != '-':
+                    self.distance_matrix_dict[(key, subkey)] = float(raw_dict[key][subkey])
 
