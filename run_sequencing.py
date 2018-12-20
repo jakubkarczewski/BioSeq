@@ -29,7 +29,7 @@ if __name__ == "__main__":
     aligner.rna_2_dna()
 
     # get alignments with aminoacid translation
-    alignments = aligner.get_alignments(custom_matrix=True, analyse_amino=True)
+    alignments = aligner.get_alignments(custom_matrix=True, analyse_amino=False)
 
     # # get score
     # score = aligner.get_score()
