@@ -5,6 +5,9 @@ import pandas as pd
 from Bio import Align
 
 
+# todo: show only best alignment and it's score
+# todo: amino_2_rna
+
 class Aligner:
     def __init__(self, seq_paths, aminoacid_dict_path, aligner_mode, distance_matrix_path, rna=False, amino=False):
         # check validity of data
@@ -37,38 +40,40 @@ class Aligner:
         # for aminoacid_2_dna translation
         self.performed_transformations = {}
 
-    def read_seqs(self, fasta=False):
+    def read_seqs(self):
         """Read sequences from files of specified format."""
-        if not fasta:
-            for path, name in zip(self.seq_paths, ('seqA', 'seqB')):
-                with open(path) as f:
-                    sequence = f.read().replace('\n', '') if not self.rna else self._rna_2_dna(f.read().
-                                                                                               replace('\n', ''))
-                    self.seqs[name] = sequence if not self.amino else self._dna_2_aminoacid(sequence)
-        else:
-            self._read_fasta()
+        for path, name in zip(self.seq_paths, ('seqA', 'seqB')):
+            with open(path) as f:
+                sequence = f.read().replace('\n', '')
+                self.seqs[name] = sequence
 
     def get_score(self):
         """Returns best alignment score"""
         return self.aligner.score(**self.seqs)
 
-    def _get_alignments(self, custom_matrix=False):
+    def get_alignments(self, custom_matrix=False, analyse_amino=False):
         """Returns alignments"""
         if custom_matrix:
             self._load_distance_matrix()
             self.aligner.substitution_matrix = self.distance_matrix_dict
+
+        if analyse_amino:
+            return self.aligner.align(self._dna_2_aminoacid(self.seqs['seqA']),
+                                      self._dna_2_aminoacid(self.seqs['seqB']))
+
         return self.aligner.align(**self.seqs)
 
-    def print_alignment(self):
-        """Print alignment and it's score"""
-        for elem in self._get_alignments():
-            print(elem)
-            print(elem.score)
-
-    @classmethod
-    def _rna_2_dna(cls, sequence):
+    def rna_2_dna(self):
         """Transforms RNA sequence do DNA sequence."""
-        return sequence.replace('U', 'T')
+        temp_seqs = dict(self.seqs)
+        for seq_name in self.seqs.keys():
+            self.seqs[seq_name] = temp_seqs[seq_name].replace('U', 'T')
+
+    def _dna_2_rna(self):
+        """Transforms DNA sequence do RNA sequence."""
+        temp_seqs = dict(self.seqs)
+        for seq_name in self.seqs.keys():
+            self.seqs[seq_name] = temp_seqs[seq_name].replace('T', 'U')
 
     def _dna_2_aminoacid(self, sequence):
         """Transforms DNA sequence to aminoacid sequence."""
@@ -85,8 +90,9 @@ class Aligner:
 
         return ''.join(translated)
 
-    def _aminoacid_2_dna(self, sequence):
-        raise NotImplementedError
+    def _aminoacid_2_dna(self, amino_sequence):
+        """Transforms aminoacid sequence to DNA sequence."""
+        return ''.join([self.performed_transformations[elem] for elem in amino_sequence])
 
     def _matrix_2_sequence(self, matrix):
         raise NotImplementedError
@@ -105,4 +111,3 @@ class Aligner:
             for subkey in raw_dict[key].keys():
                 if str(raw_dict[key][subkey]) != 'nan' and subkey != '-' and key != '-':
                     self.distance_matrix_dict[(key, subkey)] = float(raw_dict[key][subkey])
-

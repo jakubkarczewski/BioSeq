@@ -22,8 +22,31 @@ if __name__ == "__main__":
 
     aligner = Aligner([args.seq_A_path, args.seq_B_path], args.aminoacid_dict_path, args.aligner_mode,
                       args.distance_matrix, False, False)
+    # read
     aligner.read_seqs()
 
-    # print(aligner.get_score())
-    # aligner.print_alignment()
-    print(aligner.get_score())
+    # rna 2 dna
+    aligner.rna_2_dna()
+
+    # get alignments with aminoacid translation
+    alignments = aligner.get_alignments(custom_matrix=True, analyse_amino=True)
+
+    # # get score
+    # score = aligner.get_score()
+
+    # get alignment with min score
+    alignment_str = None
+    min_score = None
+    first_iter = True
+    for alignment in alignments:
+        if first_iter:
+            min_score = alignment.score
+            alignment_str = str(alignment)
+
+        if min_score > alignment.score:
+            min_score = alignment.score
+            alignment_str = str(alignment)
+
+    # print alignment
+    print(alignment_str)
+    print(min_score)
