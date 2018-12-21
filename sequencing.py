@@ -3,10 +3,8 @@ from pickle import load
 
 import pandas as pd
 from Bio import Align
+from Levenshtein import distance
 
-
-# todo: show only best alignment and it's score
-# todo: amino_2_rna
 
 class Aligner:
     def __init__(self, seq_paths, aminoacid_dict_path, aligner_mode, distance_matrix_path, rna=False, amino=False):
@@ -94,15 +92,6 @@ class Aligner:
         """Transforms aminoacid sequence to DNA sequence."""
         return ''.join([self.performed_transformations[elem] for elem in amino_sequence])
 
-    def _matrix_2_sequence(self, matrix):
-        raise NotImplementedError
-
-    def _get_distance(self, score):
-        raise NotImplementedError
-
-    def _read_fasta(self):
-        raise NotImplementedError
-
     def _load_distance_matrix(self):
         """Load distance matrix dict from .csv file."""
         raw_dict = pd.read_csv(self.distance_matrix_path, index_col=0).to_dict()
@@ -111,3 +100,8 @@ class Aligner:
             for subkey in raw_dict[key].keys():
                 if str(raw_dict[key][subkey]) != 'nan' and subkey != '-' and key != '-':
                     self.distance_matrix_dict[(key, subkey)] = float(raw_dict[key][subkey])
+
+    def get_levenstein_distance(self, analyse_amino=False):
+        """Returns Levenstein edit distance"""
+        return distance(*self.seqs.values()) if not analyse_amino else distance(self._dna_2_aminoacid(self.seqs['seqA']),
+                                                                        self._dna_2_aminoacid(self.seqs['seqB']))

@@ -10,7 +10,7 @@ if __name__ == "__main__":
                         help="Path to second seq file.")
     parser.add_argument("--aminoacid_dict_path", type=str, required=True,
                         help="Path to pickled dict with aminoacid2dna translations")
-    parser.add_argument("--convert_2_amino", type=bool, default=False,
+    parser.add_argument("--convert_2_amino", type=bool, default=True,
                         help="True if sequencing aminoacids")
     parser.add_argument("--convert_2_dna", type=bool, default=False,
                         help="True if data in RNA")
@@ -26,10 +26,11 @@ if __name__ == "__main__":
     aligner.read_seqs()
 
     # rna 2 dna
-    aligner.rna_2_dna()
+    if args.convert_2_dna:
+        aligner.rna_2_dna()
 
     # get alignments with aminoacid translation
-    alignments = aligner.get_alignments(custom_matrix=True, analyse_amino=False)
+    alignments = aligner.get_alignments(custom_matrix=True, analyse_amino=args.convert_2_amino)
 
     # # get score
     # score = aligner.get_score()
@@ -47,6 +48,8 @@ if __name__ == "__main__":
             min_score = alignment.score
             alignment_str = str(alignment)
 
-    # print alignment
-    print(alignment_str)
-    print(min_score)
+    # print alignment info-
+    print('Alignment:\n', alignment_str)
+    print('Similarity:', min_score)
+    print('Edit distance:', 1 - min_score)
+    print('Levenstein distance:', aligner.get_levenstein_distance(analyse_amino=args.convert_2_amino))
