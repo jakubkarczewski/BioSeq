@@ -103,5 +103,6 @@ class Aligner:
 
     def get_levenstein_distance(self, analyse_amino=False):
         """Returns Levenstein edit distance"""
-        return distance(*self.seqs.values()) if not analyse_amino else distance(self._dna_2_aminoacid(self.seqs['seqA']),
-                                                                        self._dna_2_aminoacid(self.seqs['seqB']))
+        return distance(*self.seqs.values()) if not analyse_amino else distance(
+            self._dna_2_aminoacid(self.seqs['seqA']),
+            self._dna_2_aminoacid(self.seqs['seqB']))
