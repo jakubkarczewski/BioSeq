@@ -26,25 +26,30 @@ from Bio.Align import MultipleSeqAlignment, AlignInfo
 from sequencing import Aligner
 
 class MultiAligner:
-    def __init__(self, seq_path, clustal_path="./clustalw2"):
-        assert isfile(seq_path)
-        assert  isfile(clustal_path)
+    def __init__(self, seq_paths, clustal_path="./clustalw2"):
+        for path in seq_paths:
+            assert isfile(path)
+        assert isfile(clustal_path)
         self.clustal_path = clustal_path
-        self.seqs_path = seq_path
-        self.seqs = None
-        self.alignments = None
+        self.seqs_paths = seq_paths
+        self.seqs = {'seqA': None, 'seqB': None}
+        self.alignments = {'seqA': None, 'seqB': None}
 
-    def open_phy_file(self):
+    def load_files(self):
         """Opens input file and loads it's content."""
-        self.seqs = AlignIO.parse(self.seqs_path, "fasta")
+        for path in self.seqs_paths:
+            seq_name = path.split('.')[0]
+            self.seqs[seq_name] = AlignIO.parse(path, "fasta")
 
-    def get_alignments(self):
-        cline = ClustalwCommandline(self.clustal_path, infile=self.seqs_path)
-        stdout, stderr = cline()
-        if not stderr:
-            print(stdout)
-        else:
-            print(stderr)
+    def get_alignments(self, verbose=False):
+        for path in self.seqs_paths:
+            cline = ClustalwCommandline(self.clustal_path, infile=path)
+            stdout, stderr = cline()
+            if verbose:
+                if not stderr:
+                    print(stdout)
+                else:
+                    print(stderr)
 
     @staticmethod
     def normalize(one_dict):
@@ -58,19 +63,31 @@ class MultiAligner:
         processed_list = []
         for i, elem in enumerate(pssm):
             processed_list.append((str(i), self.normalize(elem[-1])))
-        return  processed_list
+        return processed_list
 
     def get_profile_matrix(self):
-        filename = self.seqs_path.split('.')[0] + ".aln"
-        alignment = AlignIO.read(filename, 'clustal')
-        summary_align = AlignInfo.SummaryInfo(alignment)
-        consensus = summary_align.dumb_consensus()
-        my_pssm = summary_align.pos_specific_score_matrix(consensus)
-        copy = my_pssm.pssm
-        processed = self.process_matrix(copy)
-        my_pssm.pssm = processed
-        print(my_pssm)
-        print(consensus)
+        for path in self.seqs_paths:
+            filename = path.split('.')[0] + ".aln"
+            alignment = AlignIO.read(filename, 'clustal')
+            summary_align = AlignInfo.SummaryInfo(alignment)
+            consensus = summary_align.dumb_consensus()
+            my_pssm = summary_align.pos_specific_score_matrix(consensus)
+            copy = my_pssm.pssm
+            processed = self.process_matrix(copy)
+            my_pssm.pssm = processed
+            print('For', path.split('.')[0], ':')
+            print("Profile matrix:\n", my_pssm)
+            print("Consensus word:\n", consensus)
+
+    def get_profile_alignment(self):
+        filenames = [base + '.aln' for base in self.seqs.keys()]
+        assert len(filenames) == 2
+        cline = ClustalwCommandline(self.clustal_path, profile1=filenames[0], profile2=filenames[1])
+        stdout, stderr = cline()
+
+        print(stderr, '\n', stdout)
+
+
 
 
     # @staticmethod
