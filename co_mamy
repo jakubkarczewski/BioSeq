@@ -1,0 +1,14 @@
+Co mamy w projekcie:
+- ładowanie 2 wielosekwencji w fasta (fun load_files)
+
+- dla każdej z nich robimy wielodopasowanie wewnątrz każdej z wielosekwencji (z użyciem clustalw2) (funkcja get_alignments)
+- mamy obliczanie macierzy profilu i słowo konsensusowe dla każdego wielodopasowania (fun_get_profile_matrix)
+
+- z racji że mamy clustalaw2, który używa wielu optymalizacji używamy algo. heurystycznych
+- przez to NIE MAMY złożenia globalnego, lokalnego (biopython+clustalw nie umożliwia tego, mamy to zrobione inaczej)
+
+- mamy wejsciową macierz podobienstwa (atrybut self.custom_matrix)
+- mozemy ustawiac kary za przerwy (self.gap_penalty)
+
+- dla dwóch wielodopasowan możemy złożyć je we jedno złożenie (fun. get_progressive_profile_alignment)
+
