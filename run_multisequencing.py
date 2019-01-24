@@ -5,9 +5,9 @@ from multisequencing import MultiAligner
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--seqA_path", type=str, required=True,
-                        help="Path to .fasta file.")
+                        help="Path to first .fasta file.")
     parser.add_argument("--seqB_path", type=str, required=True,
-                        help="Path to .fasta file.")
+                        help="Path to second .fasta file.")
     parser.add_argument("--distance_matrix", type=str, default='./clustal_matrix',
                         help="Distance matrix path.")
     parser.add_argument("--gap_penalty", type=bool, default=True,
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     multialigner.get_alignments()
 
     multialigner.get_profile_matrix()
-    #
-    # multialigner.get_slow_alignment()
 
-    # multialigner.get_progressive_profile_alignment()
+    multialigner.get_slow_alignment()
+
+    multialigner.get_progressive_profile_alignment()

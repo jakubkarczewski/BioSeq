@@ -6,6 +6,9 @@ from Bio.Align import AlignInfo
 
 
 class MultiAligner:
+    """Class for performing multialignments.
+    It is necessary to download clustalw2 binary file and place it in project's directory.
+    """
     def __init__(self, seq_paths, gap_penalty, custom_matrix, matrix_path,  clustal_path="./clustalw2"):
         for path in seq_paths:
             assert isfile(path)
@@ -44,6 +47,7 @@ class MultiAligner:
 
     @staticmethod
     def normalize(one_dict):
+        """Normalize values in one row of PSSM matrix."""
         rv = {}
         one_sum = sum(list(one_dict.values()))
         for key in one_dict.keys():
@@ -93,6 +97,8 @@ class MultiAligner:
         print(stdout, '\n', stderr)
 
     def get_progressive_profile_alignment(self):
+        """Performs progressive multialignment."""
+        # set command parameters for clustalw2 execution
         args = [self.clustal_path]
         kwargs = {'profile1': self.seqs_paths[0], 'profile2': self.seqs_paths[1]}
         kwargs['gapopen'] = 5 if self.gap_penalty else 0
@@ -100,7 +106,7 @@ class MultiAligner:
         if self.custom_matrix:
             kwargs['transweight'] = 0
             kwargs['matrix'] = self.matrix_path
-
+        # execute command
         cline = ClustalwCommandline(*args, **kwargs)
         stdout, stderr = cline()
 
